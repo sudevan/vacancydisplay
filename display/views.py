@@ -8,7 +8,7 @@ import pandas as pd
 from urllib.request import Request, urlopen
 from django.shortcuts import render
 from django.http import JsonResponse
-
+import sys
 def index(request):
     if 'counter' not in request.session:
         request.session['counter'] = 0
@@ -26,6 +26,7 @@ def index(request):
 
 
 def fetch_seat_data():
+    data = []
     try:
         url = 'http://admission.gptcpalakkad.ac.in/'
         headers = {
@@ -35,7 +36,7 @@ def fetch_seat_data():
         response = urlopen(req)
         tables = pd.read_html(response)
         
-        data = []
+       
         for table in tables:
             collegename = table.iloc[2, 2]
             programs = table.iloc[3, 3:].to_list()
@@ -55,7 +56,12 @@ def fetch_seat_data():
             data.append({'college': collegename, 'branches': branches})
         
         return data
-    except:
+    except Exception as e:
+         # Print exception information
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        print(f"Exception Type: {exc_type.__name__}")
+        print(f"Exception: {e}")
+        print(f"Line Number: {exc_tb.tb_lineno}")
         return JsonResponse(data)
 
 def seat_availability_view(request):

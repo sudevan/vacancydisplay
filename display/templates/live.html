@@ -39,7 +39,7 @@ h2 {
 }
 
 table {
-    width: 75%;
+    width: 100%;
     margin: 0 auto;
     border-collapse: collapse;
     font-size: 2em; /* Increased for readability */
@@ -109,8 +109,8 @@ td {
             const animateScroll = () => {
                 tableContainer.scrollTop = 0;
                 const scrollStep = () => {
-                    if (tableContainer.scrollTop <= (scrollHeight - tableContainer.clientHeight)) {
-                        tableContainer.scrollTop += 2;
+                    if (tableContainer.scrollTop < scrollHeight - tableContainer.clientHeight) {
+                        tableContainer.scrollTop += 1;
                         requestAnimationFrame(scrollStep);
                     } else {
                         // Reload the page to show the next college
