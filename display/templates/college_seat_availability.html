@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ college }} Seat Availability</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        b {
+          color: red;
+          font-size: 1.5em; /* Adjust font size as desired */
+          text-align: center; 
+        }
+      </style>
 </head>
 <body>
     <div class="container mt-5">
+        <b>Please note: Seat availability may change. Final vacancy status will be confirmed at the admission desk.</b>
         <h2 class="text-center">{{ college }}</h2>
         <div class="table-responsive">
             <table class="table table-bordered">
@@ -38,5 +46,6 @@
             <a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>
         </div>
     </div>
+    
 </body>
 </html>
