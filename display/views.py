@@ -11,13 +11,22 @@ def fetch_seat_data():
         req = Request(url, headers=headers)
         response = urlopen(req)
         tables = pd.read_html(response)
-
+        #for government seats we have to show no seats available message. 
+        # if no seats available in html that college will not be listed. so we have to add it manually
+        iptshoranuravailable=False
+        iptname='IPT & GPTC, Shoranur'
+        gpcpkdname='Government Polytechnic College, Palakkad'
+        gpcpkdavailable=False
         data = []
         for table in tables:
             collegename = table.iloc[2, 2]
             programs = table.iloc[3, 3:].to_list()
             quotacount = len(table) - 1
+            if (collegename == iptname ):
+                iptshoranuravailable=True
 
+            if (collegename == gpcpkdname):
+                gpcpkdavailable = True
             branches = []
             for idx, program in enumerate(programs):
                 branch_name = fulform(program)
@@ -30,6 +39,11 @@ def fetch_seat_data():
                 branches.append({'name': branch_name, 'categories': categories})
 
             data.append({'college': collegename, 'branches': branches})
+  
+        if(not iptshoranuravailable ):
+            data.append({'college': iptname, 'branches': {'name': 'No Seats' , 'categories': {'name': 'No Seats', 'availability': 'No seats'}}})
+        if(not gpcpkdavailable ):
+            data.append({'college': gpcpkdname, 'branches': {'name': 'No Seats' , 'categories': {'name': 'No Seats', 'availability': 'No seats'}}})
 
         return data
 
