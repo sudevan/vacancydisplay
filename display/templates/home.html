@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Colleges</h1>
+        <div class="list-group">
+            {% for college in colleges %}
+                <a href="{% url 'college_view' college.name %}" class="list-group-item list-group-item-action">
+                    {{ college.name }}
+                </a>
+            {% endfor %}
+        </div>
+       
+    </div>
+</body>
+</html>
