@@ -35,6 +35,17 @@
                 </div>
             {% endfor %}
         </div>
+        <h1 class="text-center mt-5">Branches</h1>
+        <div class="row">
+            {% for branch in branches %}
+                <div class="col-12 col-md-6">
+                    <a href="{% url 'branch_view' branch %}" class="college-link">
+                        {{ branch }}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+       
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
