@@ -16,7 +16,7 @@ COPY requirements.txt /code/
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install lxml
-
+RUN pip install django-cors-headers
 # Copy the current directory contents into the container at /code/
 COPY . /code/
 
