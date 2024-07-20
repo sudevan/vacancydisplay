@@ -1,6 +1,9 @@
+# views.py
 import pandas as pd
-from django.shortcuts import render
-
+from django.http import JsonResponse
+from .models import SelectedCollege
+from django.shortcuts import render, redirect
+from django.contrib import messages
 def fetch_seat_data():
     try:
         url = 'http://admission.gptcpalakkad.ac.in/'
@@ -21,10 +24,9 @@ def fetch_seat_data():
                     availability = table.iloc[i, 3 + idx]
                     if pd.notna(availability):
                         categories.append({'name': category_name, 'availability': availability})
-                
-                if not categories:
-                    categories.append({'name': 'N/A', 'availability': 'No seats available'})
-
+                    else:
+                        categories.append({'name': category_name, 'availability': 0})
+   
                 branches.append({'name': branch_name, 'categories': categories})
 
             data.append({'college': collegename, 'branches': branches})
@@ -35,27 +37,75 @@ def fetch_seat_data():
         print(f"Error fetching or processing data: {e}")
         return []
 
+def api_seat_availability(request):
+    selected_colleges = SelectedCollege.objects.filter(display=True)
+    data = fetch_seat_data()
+    filtered_data = [college for college in data if college['college'] in [c.name for c in selected_colleges]]
+    return JsonResponse(filtered_data, safe=False)
+
+def seat_availability_view(request):
+    data = fetch_seat_data()
+    selected_colleges = SelectedCollege.objects.filter(display=True)
+    filtered_data = [college for college in data if college['college'] in [c.name for c in selected_colleges]]
+
+    return render(request, 'seat_availability.html', {
+        'colleges': filtered_data
+    })
+
+
+def admin_view(request):
+    if request.method == 'POST':
+        selected_colleges = request.POST.getlist('colleges')
+        
+        # Update display status for colleges
+        SelectedCollege.objects.update(display=False)
+        SelectedCollege.objects.filter(name__in=selected_colleges).update(display=True)
+        print(SelectedCollege.objects.filter(display=True))
+        # Add a success message
+        messages.success(request, 'Colleges selected successfully!')
+        
+        return redirect(f'{request.path}?success=true')
+        # return redirect(f'select_college')
+    
+    colleges = fetch_seat_data()
+    for college in colleges:
+        college['display'] = SelectedCollege.objects.filter(name=college['college'], display=True).exists()
+    
+    return render(request, 'select_college.html', {'colleges': colleges})
+
+# def admin_view(request):
+#     if request.method == 'POST':
+#         selected_colleges = request.POST.getlist('colleges')
+#         SelectedCollege.objects.update(display=False)
+#         SelectedCollege.objects.filter(name__in=selected_colleges).update(display=True)
+#         return redirect('select_college')
+    
+#     colleges = fetch_seat_data()
+#     for college in colleges:
+#         college['display'] = SelectedCollege.objects.filter(name=college['college'], display=True).exists()
+    
+#     return render(request, 'select_college.html', {'colleges': colleges})
+
 def home_view(request):
     data = fetch_seat_data()
     colleges = [{'name': college['college']} for college in data]
     branches = {branch['name'] for college in data for branch in college['branches']}
     return render(request, 'home.html', {'colleges': colleges, 'branches': branches})
 
-def seat_availability_view(request):
-    data = fetch_seat_data()
-    current_index = request.session.get('current_college_index', 0)
-
-    if current_index >= len(data):
-        current_index = 0
-
-    current_college_data = data[current_index]
-
-    request.session['current_college_index'] = (current_index + 1) % len(data)
-
-    return render(request, 'seat_availability.html', {
-        'college': current_college_data['college'],
-        'branches': current_college_data['branches']
-    })
+def fulform(data):
+    branch_dict = {
+        "CM": "Computer Hardware Engineering",
+        "EL": "Electronics Engineering",
+        "ME": "Mechanical Engineering",
+        "EE": "Electrical Electronics Engineering",
+        "IE": "Instrumentation Engineering",
+        "CE": "Civil Engineering",
+        "CT": "Computer Engineering",
+        "PT": "Printing Engineering",
+        "AU": "Automobile Engineering",
+        "AM": "Artificial Intelligence & Machine Learning"
+    }
+    return branch_dict.get(data, data)
 
 def college_view(request, college_name):
     data = fetch_seat_data()
@@ -86,18 +136,3 @@ def branch_view(request, branch_name):
         'branch': branch_name,
         'colleges': branch_data
     })
-
-def fulform(data):
-    branch_dict = {
-        "CM": "Computer Hardware Engineering",
-        "EL": "Electronics Engineering",
-        "ME": "Mechanical Engineering",
-        "EE": "Electrical Electronics Engineering",
-        "IE": "Instrumentation Engineering",
-        "CE": "Civil Engineering",
-        "CT": "Computer Engineering",
-        "PT": "Printing Engineering",
-        "AU": "Automobile Engineering",
-        "AM": "Artificial Intelligence & Machine Learning"
-    }
-    return branch_dict.get(data, data)
