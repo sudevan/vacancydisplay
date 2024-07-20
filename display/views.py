@@ -4,6 +4,51 @@ from django.http import JsonResponse
 from .models import SelectedCollege
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.db import transaction
+
+def save_colleges_to_db(colleges):
+    """
+    Save or update colleges in the database.
+    """
+    with transaction.atomic():
+        # Update existing records and create new ones
+        for college in colleges:
+            college_name = college['college']
+            SelectedCollege.objects.update_or_create(name=college_name)
+
+# def fetch_seat_data():
+#     try:
+#         url = 'http://admission.gptcpalakkad.ac.in/'
+#         tables = pd.read_html(url)
+
+#         data = []
+#         for table in tables:
+#             collegename = table.iloc[2, 2]
+#             programs = table.iloc[3, 3:].to_list()
+#             quotacount = len(table) - 1
+
+#             branches = []
+#             for idx, program in enumerate(programs):
+#                 branch_name = fulform(program)
+#                 categories = []
+#                 for i in range(4, quotacount + 1):
+#                     category_name = table.iloc[i, 2].upper()
+#                     availability = table.iloc[i, 3 + idx]
+#                     if pd.notna(availability):
+#                         categories.append({'name': category_name, 'availability': availability})
+#                     else:
+#                         categories.append({'name': category_name, 'availability': 0})
+   
+#                 branches.append({'name': branch_name, 'categories': categories})
+
+#             data.append({'college': collegename, 'branches': branches})
+
+#         return data
+
+#     except Exception as e:
+#         print(f"Error fetching or processing data: {e}")
+#         return []
+
 def fetch_seat_data():
     try:
         url = 'http://admission.gptcpalakkad.ac.in/'
@@ -31,12 +76,15 @@ def fetch_seat_data():
 
             data.append({'college': collegename, 'branches': branches})
 
+        # Save colleges to the database
+        save_colleges_to_db(data)
+
         return data
 
     except Exception as e:
         print(f"Error fetching or processing data: {e}")
         return []
-
+    
 def api_seat_availability(request):
     selected_colleges = SelectedCollege.objects.filter(display=True)
     data = fetch_seat_data()
