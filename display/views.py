@@ -6,10 +6,15 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
 
+
+
+
 def save_colleges_to_db(colleges):
     """
     Save or update colleges in the database.
     """
+    
+    print("hai")
     with transaction.atomic():
         # Update existing records and create new ones
         for college in colleges:
@@ -75,10 +80,12 @@ def fetch_seat_data():
                 branches.append({'name': branch_name, 'categories': categories})
 
             data.append({'college': collegename, 'branches': branches})
-
+ 
         # Save colleges to the database
+      
         save_colleges_to_db(data)
-
+            
+    
         return data
 
     except Exception as e:
