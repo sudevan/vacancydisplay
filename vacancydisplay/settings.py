@@ -57,7 +57,9 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'vacancydisplay.urls'
 
 STATIC_URL = '/static/'
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://vacancy.gptcpalakkad.ac.in',
+]
 # Add the following to serve the React app
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'frontend', 'static'),
