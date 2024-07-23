@@ -1,12 +1,14 @@
 # views.py
 import pandas as pd
 from django.http import JsonResponse
-from .models import SelectedCollege
+from .models import SelectedCollege,Note
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
 
-
+def get_notes(request):
+    note = Note.objects.latest('created_at')  # Get the latest note
+    return JsonResponse({'notes': note.content}, safe=False)
 
 
 def save_colleges_to_db(colleges):
@@ -110,23 +112,52 @@ def seat_availability_view(request):
 
 def admin_view(request):
     if request.method == 'POST':
-        selected_colleges = request.POST.getlist('colleges')
+        if 'colleges' in request.POST:
+            # Handle college selection
+            selected_colleges = request.POST.getlist('colleges')
+            
+            # Update display status for colleges
+            SelectedCollege.objects.update(display=False)
+            SelectedCollege.objects.filter(name__in=selected_colleges).update(display=True)
+            print(SelectedCollege.objects.filter(display=True))
+            
+            # Add a success message
+            messages.success(request, 'Colleges selected successfully!')
         
-        # Update display status for colleges
-        SelectedCollege.objects.update(display=False)
-        SelectedCollege.objects.filter(name__in=selected_colleges).update(display=True)
-        print(SelectedCollege.objects.filter(display=True))
-        # Add a success message
-        messages.success(request, 'Colleges selected successfully!')
+        if 'note_content' in request.POST:
+            # Handle note saving
+            note_content = request.POST.get('note_content')
+            if note_content:
+                Note.objects.create(content=note_content)
+                messages.success(request, 'Note added successfully!')
         
         return redirect(f'{request.path}?success=true')
-        # return redirect(f'select_college')
     
     colleges = fetch_seat_data()
     for college in colleges:
         college['display'] = SelectedCollege.objects.filter(name=college['college'], display=True).exists()
+
+    notes = Note.objects.all().order_by('-created_at')  # Fetch notes to display
+    return render(request, 'select_college.html', {'colleges': colleges, 'notes': notes})
+# def admin_view(request):
+#     if request.method == 'POST':
+#         selected_colleges = request.POST.getlist('colleges')
+        
+#         # Update display status for colleges
+#         SelectedCollege.objects.update(display=False)
+#         SelectedCollege.objects.filter(name__in=selected_colleges).update(display=True)
+#         print(SelectedCollege.objects.filter(display=True))
+#         # Add a success message
+#         messages.success(request, 'Colleges selected successfully!')
+        
+#         return redirect(f'{request.path}?success=true')
+#         # return redirect(f'select_college')
     
-    return render(request, 'select_college.html', {'colleges': colleges})
+#     colleges = fetch_seat_data()
+#     for college in colleges:
+#         college['display'] = SelectedCollege.objects.filter(name=college['college'], display=True).exists()
+    
+#     return render(request, 'select_college.html', {'colleges': colleges})
 
 # def admin_view(request):
 #     if request.method == 'POST':
