@@ -189,7 +189,11 @@ def fulform(data):
         "CT": "Computer Engineering",
         "PT": "Printing Engineering",
         "AU": "Automobile Engineering",
-        "AM": "Artificial Intelligence & Machine Learning"
+        "AM": "Artificial Intelligence & Machine Learning",
+        "CG": "Computer Science and Technology",
+        "AR": "Architecture",
+        "FS":"Fire Technology and Safety",
+         "EC":"Electronics & Communication Engineering",
     }
     return branch_dict.get(data, data)
 
